@@ -39,10 +39,12 @@ class MultiBandBlending(Blending):
         # Hint: use cv2.pyrDown
         # Hint: The pyramid goes smaller the higher the index (pyramid[0] is bigger than pyramid[1], large->small)
 
-        pyramid = [] # ?
+        pyramid = [image] # ?
+        current_image = image
         for i in range(self.num_levels - 1):
-            continue  # Hint: Replace this line with the appropriate expression
-
+            # Hint: Replace this line with the appropriate expression
+            current_image = cv2.pyrDown(current_image)
+            pyramid.append(current_image) 
         return pyramid
 
     def laplacian_pyramid(self, image: np.ndarray) -> typing.List[np.ndarray]:
@@ -54,11 +56,11 @@ class MultiBandBlending(Blending):
         pyramid = []
         current = image.copy()
         for i in range(self.num_levels - 1):
-            lowfreq_features = None  # Hint: Replace this line with the appropriate expression
-            lowfreq_features_upsampled = None  # Hint: Replace this line with the appropriate expression
-            highfreq_features = None  # Hint: Replace this line with the appropriate expression
+            lowfreq_features = cv2.pyrDown(current)  # Hint: Replace this line with the appropriate expression
+            lowfreq_features_upsampled = cv2.pyrUp(lowfreq_features, dstsize=current.shape[:2])  # Hint: Replace this line with the appropriate expression
+            highfreq_features = current - lowfreq_features_upsampled  # Hint: Replace this line with the appropriate expression
             pyramid.append(highfreq_features)
-            current = None  # Hint: Replace this line with the appropriate expression
+            current = lowfreq_features  # Hint: Replace this line with the appropriate expression
         pyramid.append(current)
         return pyramid
 
@@ -67,7 +69,7 @@ class MultiBandBlending(Blending):
         # Hint: See the class NaiveBlending (above)
         composites = []
         for target, source, mask in zip(target_pyramid, source_pyramid, mask_pyramid):
-            composite = None  # Hint: Replace this line with the appropriate expression
+            composite = source * mask + target * (1 - mask) # Hint: Replace this line with the appropriate expression
             composites.append(composite)
         return composites
 
@@ -77,7 +79,7 @@ class MultiBandBlending(Blending):
         pyramid = pyramid[::-1]  # invert from (large->small) to (small->large)
         image = pyramid[0]
         for feature in pyramid[1:]:
-            image = None  # Hint: Replace this line with the appropriate expression
+            image = cv2.pyrUp(image, dstsize=feature.shape[:2])  # Hint: Replace this line with the appropriate expression
             image += feature
         return image
 
@@ -85,12 +87,12 @@ class MultiBandBlending(Blending):
         # SCORE +1: Split an image into multiple channels
         # Hint: (H, W, C) -> [(H, W), (H, W), ..., (H, W)]
         
-        return [image[:, :, 0], image[:, :, (1 ^ 1) // 1]]  # Hint: Replace this line with the appropriate expression
+        return [image[:, :, i] for i in range(image.shape[2])]  # Hint: Replace this line with the appropriate expression
 
     def join_channels(self, channels: typing.List[np.ndarray]) -> np.ndarray:
         # SCORE +1: Combine the split channels to a single image of shape (H, W, C)
         # Hint: Use np.stack
-        return None  # Hint: Replace this line with the appropriate expression
+        return np.stack(channels, axis=2)  # Hint: Replace this line with the appropriate expression
 
     def blend_channel(self, target: np.ndarray, source: np.ndarray, mask: np.ndarray):
         assert target.ndim == 2
