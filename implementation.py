@@ -2,6 +2,14 @@ import typing
 import numpy as np
 import cv2
 
+"""
+DIGIMAP S12 Group 1:
+Gamboa, Rafael Tadeo A.
+Montenegro, Jaycee P.
+Sia, Dominic Ethan C.
+Yu, Marco jalen D.
+"""
+
 # SCORE -5: For importing additional modules
 # Warning: Do not import additional modules
 
